@@ -20,6 +20,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      mongodb:
+        specifier: ^6.12.0
+        version: 6.12.0
       mongoose:
         specifier: ^8.9.0
         version: 8.9.0
