@@ -5,6 +5,8 @@ const connectDB = require('./db');
 const bookRoutes = require('./routes/book');
 const cartRoutes = require('./routes/cart');
 const authRoutes = require('./routes/auth');  
+const coinRoutes = require('./routes/coin');
+const coinTransactionRoutes = require('./routes/coinTransaction');
 
 dotenv.config();
 
@@ -21,6 +23,8 @@ app.get("/", (req, res) => {
 app.use('/book', bookRoutes);
 app.use('/cart', cartRoutes);
 app.use('/auth', authRoutes); 
+app.use('/coin', coinRoutes);
+app.use('/transaction', coinTransactionRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
