@@ -2,7 +2,7 @@ const cartService = require('../services/cart');
 
 exports.getCart = async (req, res) => {
   try {
-    const userId = req.user.userId; e
+    const userId = req.user.userId; 
     const carts = await cartService.getCartByUserId(userId);
 
     if (!carts || carts.length === 0) {
