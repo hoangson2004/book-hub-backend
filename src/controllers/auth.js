@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const authService = require('../services/auth');
+const coinService = require('../services/coin');
 const UserModel = require('../models/User');
 const bcrypt = require('bcrypt');
 
@@ -18,6 +19,14 @@ exports.register = async (req, res) => {
         }
 
         const user = await authService.registerUser({ username, email, password, phoneNumber, dateOfBirth });
+        
+        try {
+            await coinService.createCoinBalance(user._id); 
+        } catch (coinError) {
+            return res.status(500).json({ 
+                error: `User registered successfully but failed to initialize coin balance: ${coinError.message}` 
+            });
+        }
 
         res.json({ message: 'User registered successfully', user: { id: user._id, username: user.username, email: user.email } });
     } catch (err) {

@@ -6,14 +6,26 @@ exports.getCoinBalance = async (userId) => {
     if (!coin) {
       coin = new Coin({
         userId,
-        balance: 0, 
+        balance: 0,
       });
-      await coin.save();
     }
-
+    await coin.save();
     return coin.balance;
   } catch (error) {
     throw new Error('Error fetching coin balance: ' + error.message);
+  }
+};
+
+exports.createCoinBalance = async (userId) => {
+  try {
+    const coin = new Coin({
+      userId,
+      balance: 0,
+    });
+    await coin.save();
+    return coin.balance;
+  } catch (error) {
+    throw new Error('Error initialize data, please try later' + error.message);
   }
 };
 
