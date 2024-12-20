@@ -81,7 +81,7 @@ exports.updateOrderStatus = async (orderId, status) => {
             case 'Overdue':
                 if (order.status === 'Completed') {
                     // Gọi đến service để xử lý overdue
-                    await OverdueService.calculateAndUpdateOverdue(order);
+                    await OverdueService.createOverdueOrder(order);
                     order.status = 'Overdue';
                     await order.save();
                     break;
@@ -96,7 +96,7 @@ exports.updateOrderStatus = async (orderId, status) => {
                         throw new Error('Coin account not found for the user');
                     }
 
-                    coin.balance += order.depositAmount;
+                    coin.balance += order.totalAmount;
                     await coin.save(); 
                     order.status = 'Cancelled';
                     await order.save();

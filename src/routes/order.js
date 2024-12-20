@@ -9,4 +9,6 @@ router.post('/create', orderController.createOrder);
 
 router.put('/update', orderController.updateOrderStatus);
 
+router.put('/cancel', orderController.cancelOrder);
+
 module.exports = router;

@@ -11,7 +11,7 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-exports.updateOrderStatus = async (req, res) => {
+exports.updateOrderStatus = async (req, res) => { //admin
     const { orderId, status } = req.body;
 
     try {
@@ -22,7 +22,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
-exports.getAllOrders = async (req, res) => {
+exports.getAllOrders = async (req, res) => { //admin
     try {
         const orders = await orderService.getAllOrders();
         res.status(200).json(orders);
@@ -32,7 +32,7 @@ exports.getAllOrders = async (req, res) => {
 };
 
 exports.getOrderByUserId = async (req, res) => {
-    const { userId } = req.params; 
+    const { userId } = req.params;
     try {
         const orders = await orderService.getOrderByUserId(userId);
         res.status(200).json(orders);
@@ -40,3 +40,13 @@ exports.getOrderByUserId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.cancelOrder = async (req, res) => {
+    const { orderId } = req.body;
+    try {
+        const updatedOrder = await orderService.updateOrderStatus(orderId, 'Cancelled');
+        res.status(200).json({ message: 'Cancel order successfully', order: updatedOrder });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
