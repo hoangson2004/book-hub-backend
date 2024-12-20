@@ -7,6 +7,7 @@ const cartRoutes = require('./routes/cart');
 const authRoutes = require('./routes/auth');  
 const coinRoutes = require('./routes/coin');
 const coinTransactionRoutes = require('./routes/coinTransaction');
+const orderRoutes = require('./routes/order');
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use('/cart', cartRoutes);
 app.use('/auth', authRoutes); 
 app.use('/coin', coinRoutes);
 app.use('/transaction', coinTransactionRoutes);
+app.use('/order', orderRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

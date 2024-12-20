@@ -1,0 +1,115 @@
+const Order = require('../models/Order');
+const OverdueService = require('./overdue');
+const Coin = require('../models/Coin');
+
+exports.getAllOrders = async () => {
+    try {
+        const orders = await Order.find()
+            .populate('userId', 'name email')
+            .populate('items.bookId', 'title author');
+        return orders;
+    } catch (error) {
+        throw new Error('Error fetching orders: ' + error.message);
+    }
+};
+
+// Lấy đơn hàng theo userId
+exports.getOrderByUserId = async (userId) => {
+    try {
+        const orders = await Order.find({ userId })
+            .populate('userId', 'name email')
+            .populate('items.bookId', 'title author');
+        return orders;
+    } catch (error) {
+        throw new Error('Error fetching orders by userId: ' + error.message);
+    }
+};
+
+
+exports.createOrder = async ({ userId, items, totalAmount, depositAmount, rentalAmount, paymentMethod, dueDate }) => {
+    try {
+        let coin = await Coin.findOne({ userId });
+        if (coin.balance < totalAmount) {
+            throw new Error('Insufficient coin balance');
+        }
+
+        coin.balance -= totalAmount;
+        await coin.save();
+
+        const order = new Order({
+            userId,
+            items,
+            totalAmount,
+            depositAmount,
+            rentalAmount,
+            paymentMethod,
+            status: 'Pending',
+            dueDate,
+        });
+
+        await order.save();
+        return order;
+    } catch (error) {
+        throw new Error('Error creating order: ' + error.message);
+    }
+};
+
+exports.updateOrderStatus = async (orderId, status) => {
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        switch (status) {
+            case 'Processing':
+                if (order.status === 'Pending') {
+                    order.status = 'Processing';
+                    await order.save();
+                    break;
+                }
+                throw new Error('Invalid status transition');
+
+            case 'Completed':
+                if (order.status === 'Processing') {
+                    order.status = 'Completed';
+                    await order.save();
+                    break;
+                }
+                throw new Error('Invalid status transition');
+
+            case 'Overdue':
+                if (order.status === 'Completed') {
+                    // Gọi đến service để xử lý overdue
+                    await OverdueService.calculateAndUpdateOverdue(order);
+                    order.status = 'Overdue';
+                    await order.save();
+                    break;
+                }
+                throw new Error('Invalid status transition');
+
+            case 'Cancelled':
+                if (order.status === 'Pending' || order.status === 'Processing') {
+
+                    const coin = await Coin.findOne({ userId: order.userId });
+                    if (!coin) {
+                        throw new Error('Coin account not found for the user');
+                    }
+
+                    coin.balance += order.depositAmount;
+                    await coin.save(); 
+                    order.status = 'Cancelled';
+                    await order.save();
+                    break;
+                }
+                throw new Error('Invalid status transition');
+
+            default:
+                throw new Error('Unknown status');
+        }
+
+        return order;
+    } catch (error) {
+        throw new Error('Error updating order status: ' + error.message);
+    }
+};
