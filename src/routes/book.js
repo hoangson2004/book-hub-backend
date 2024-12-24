@@ -4,16 +4,17 @@ const {
   createBook,
   getBookById,
   updateBook,
-  deleteBook
-} = require('../controllers/book'); // Đảm bảo đường dẫn đúng tới controller
+  deleteBook,
+} = require('../controllers/book');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
-// Định nghĩa các route cho sách
-router.get('/', getAllBooks);         // GET tất cả sách
-router.post('/', createBook);         // POST tạo sách mới
-router.get('/:id', getBookById);     // GET lấy sách theo id
-router.put('/:id', updateBook);      // PUT cập nhật sách theo id
-router.delete('/:id', deleteBook);   // DELETE xóa sách theo id
+// Dùng middleware upload.single('image') để nhận ảnh từ request
+router.get('/', getAllBooks);
+router.post('/', upload.single('image'), createBook);  // Tạo mới sách và upload ảnh
+router.get('/:id', getBookById);
+router.put('/:id', upload.single('image'), updateBook);  // Cập nhật sách và ảnh nếu có
+router.delete('/:id', deleteBook);
 
 module.exports = router;

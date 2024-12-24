@@ -13,7 +13,6 @@ exports.getAllOrders = async () => {
     }
 };
 
-// Lấy đơn hàng theo userId
 exports.getOrderByUserId = async (userId) => {
     try {
         const orders = await Order.find({ userId })
@@ -80,7 +79,6 @@ exports.updateOrderStatus = async (orderId, status) => {
 
             case 'Overdue':
                 if (order.status === 'Completed') {
-                    // Gọi đến service để xử lý overdue
                     await OverdueService.createOverdueOrder(order);
                     order.status = 'Overdue';
                     await order.save();

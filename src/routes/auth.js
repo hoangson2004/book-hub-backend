@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const { register, login, getProfile, getAllUsers, getUserById, updateProfile } = require('../controllers/auth');
-const authMiddleware = require('../middleware/authMiddleware'); // Middleware kiểm tra JWT
+const authMiddleware = require('../middleware/authMiddleware'); 
 
 const router = express.Router();
 

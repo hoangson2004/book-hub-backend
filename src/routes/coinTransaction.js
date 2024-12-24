@@ -6,7 +6,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.route('/getAll').get(authMiddleware, getAllCoinTransactions)  // Admin only
 
-router.route('/').post(authMiddleware, createCoinTransaction) 
+router.route('/')
+    .post(authMiddleware, createCoinTransaction) 
     .get(authMiddleware, getCoinTransactionByUserId);
 
 router.route('/:transactionId')

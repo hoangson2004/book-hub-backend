@@ -3,9 +3,8 @@ const bcrypt = require('bcrypt');
 
 exports.registerUser = async (userData) => {
   try {
-    // Tạo người dùng mới
     const user = new UserModel(userData);
-    await user.save(); // Lưu người dùng vào cơ sở dữ liệu
+    await user.save(); 
     return user;
   } catch (err) {
     throw new Error('Error registering user: ' + err.message);

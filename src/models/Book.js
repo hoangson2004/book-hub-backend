@@ -7,6 +7,7 @@ const BookSchema = new Schema({
   description: { type: String },
   price: { type: Number, required: true },
   stock: { type: Number, default: 0 },
+  imageUrl: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 
