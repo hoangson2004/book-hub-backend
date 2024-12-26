@@ -5,42 +5,40 @@ exports.getAllBooks = async () => {
   return await BookModel.find();
 };
 
-exports.createBook = async (book, file) => {
+exports.createBook = async (book, file, userId) => {
   let imageUrl = null;
 
-  // Xử lý upload ảnh nếu có file
   if (file) {
     imageUrl = await uploadToCloudinary(file.buffer, 'books');
   }
 
-  // Tạo sách mới với URL ảnh (nếu có)
-  return await BookModel.create({
+  const newBook = await BookModel.create({
     ...book,
     imageUrl,
+    userId, 
   });
+
+  return newBook;
 };
 
 exports.getBookById = async (id) => {
   return await BookModel.findById(id);
 };
 
-exports.updateBook = async (id, book, file) => {
+exports.updateBook = async (id, book, file, userId) => {
   let imageUrl = null;
 
-  // Xử lý upload ảnh nếu có file
   if (file) {
     imageUrl = await uploadToCloudinary(file.buffer, 'books');
   }
 
-  // Cập nhật sách
-  return await BookModel.findByIdAndUpdate(
-    id,
-    {
-      ...book,
-      ...(imageUrl && { imageUrl }),
-    },
-    { new: true }
-  );
+  const updatedBook = await BookModel.findByIdAndUpdate(id, {
+    ...book,
+    ...(imageUrl && { imageUrl }), 
+    userId,  
+  }, { new: true });
+
+  return updatedBook;
 };
 
 exports.deleteBook = async (id) => {

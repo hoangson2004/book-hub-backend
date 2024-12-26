@@ -3,7 +3,7 @@ const bookService = require('../services/book');
 exports.getAllBooks = async (req, res) => {
   try {
     const books = await bookService.getAllBooks();
-    console.log(books);
+    //console.log(books);
     res.status(200).json({ data: books, status: 'success' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -12,7 +12,7 @@ exports.getAllBooks = async (req, res) => {
 
 exports.createBook = async (req, res) => {
   try {
-    const newBook = await bookService.createBook(req.body, req.file);
+    const newBook = await bookService.createBook(req.body, req.file, req.user.userId);
 
     res.status(201).json({ data: newBook, status: 'success' });
   } catch (err) {
@@ -34,7 +34,7 @@ exports.getBookById = async (req, res) => {
 
 exports.updateBook = async (req, res) => {
   try {
-    const updatedBook = await bookService.updateBook(req.params.id, req.body, req.file);
+    const updatedBook = await bookService.updateBook(req.params.id, req.body, req.file, req.user.userId);
 
     if (!updatedBook) {
       return res.status(404).json({ message: 'Book not found', status: 'error' });

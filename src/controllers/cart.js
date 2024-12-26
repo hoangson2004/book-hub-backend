@@ -4,11 +4,7 @@ exports.getCart = async (req, res) => {
   try {
     const userId = req.user.userId; 
     const carts = await cartService.getCartByUserId(userId);
-
-    if (!carts || carts.length === 0) {
-      return res.status(404).json({ message: 'No items in cart', status: 'error' });
-    }
-
+    console.log(carts);
     res.json({ data: carts, status: 'success' });
   } catch (err) {
     res.status(500).json({ error: err.message });
