@@ -1,8 +1,10 @@
+const moment = require('moment');
 const Order = require('../models/Order');
 const OverdueService = require('./overdue');
 const Coin = require('../models/Coin');
+const { getBookById } = require('./book');
 
-exports.getAllOrders = async () => {
+exports.getAllOrders = async () => { 
     try {
         const orders = await Order.find()
             .populate('userId', 'name email')
@@ -13,7 +15,7 @@ exports.getAllOrders = async () => {
     }
 };
 
-exports.getOrderByUserId = async (userId) => {
+exports.getOrderByUserId = async (userId) => { 
     try {
         const orders = await Order.find({ userId })
             .populate('userId', 'name email')
@@ -24,9 +26,75 @@ exports.getOrderByUserId = async (userId) => {
     }
 };
 
-
-exports.createOrder = async ({ userId, items, totalAmount, depositAmount, rentalAmount, paymentMethod, dueDate }) => {
+exports.getListOrder = async (userId) => {
     try {
+        const orders = await Order.find({ userId }).select('_id status updatedAt'); 
+
+        if (!orders || orders.length === 0) {
+            throw new Error('No orders found');
+        }
+        return orders.map(order => ({
+            orderId: order._id,
+            status: order.status,
+            updatedAt: order.updatedAt,
+        }));
+    } catch (error) {
+        throw new Error('Error retrieving orders: ' + error.message);
+    }
+};
+
+exports.getOrderByOrderId = async (userId, orderId) => {
+  try {
+    const order = await Order.findOne({ _id: orderId, userId });
+    
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    return order; 
+  } catch (error) {
+    throw new Error('Error retrieving order: ' + error.message);
+  }
+};
+
+
+exports.createOrder = async ({ userId, items, paymentMethod, dueDate }) => {
+    try {
+        let totalDepositAmount = 0;
+        let totalRentalAmount = 0;
+
+        const itemDetails = await Promise.all(
+            items.map(async (item) => {
+                const book = await getBookById(item.bookId); 
+                if (!book) {
+                    throw new Error(`Book with id ${item.bookId} not found`);
+                }
+
+                const depositForItem = book.price * item.quantity;
+                totalDepositAmount += depositForItem;
+
+                const nowDate = moment();
+                const dueDateMoment = moment(dueDate);
+
+                const daysDifference = Math.floor(dueDateMoment.diff(nowDate, 'days', true)); 
+                if (daysDifference <= 0) {
+                    throw new Error(`Due date must be in the future. Invalid due date: ${dueDate}`);
+                }
+
+                const rentalForItem = book.price * 0.02 * daysDifference * item.quantity;
+                totalRentalAmount += rentalForItem;
+
+                return {
+                    bookId: item.bookId,
+                    quantity: item.quantity,
+                    price: book.price,
+                    depositForItem,
+                    rentalForItem,
+                };
+            })
+        );
+
+        const totalAmount = totalDepositAmount + totalRentalAmount;
+
         let coin = await Coin.findOne({ userId });
         if (coin.balance < totalAmount) {
             throw new Error('Insufficient coin balance');
@@ -37,10 +105,10 @@ exports.createOrder = async ({ userId, items, totalAmount, depositAmount, rental
 
         const order = new Order({
             userId,
-            items,
+            items: itemDetails,
             totalAmount,
-            depositAmount,
-            rentalAmount,
+            depositAmount: totalDepositAmount,
+            rentalAmount: totalRentalAmount,
             paymentMethod,
             status: 'Pending',
             dueDate,
@@ -52,6 +120,7 @@ exports.createOrder = async ({ userId, items, totalAmount, depositAmount, rental
         throw new Error('Error creating order: ' + error.message);
     }
 };
+
 
 exports.updateOrderStatus = async (orderId, status) => {
     try {

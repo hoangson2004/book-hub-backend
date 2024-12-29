@@ -27,7 +27,6 @@ exports.register = async (req, res) => {
                 error: `User registered successfully but failed to initialize coin balance: ${coinError.message}` 
             });
         }
-        console.log(user);
         res.json({ message: 'User registered successfully', user: { id: user._id, username: user.username, email: user.email } });
     } catch (err) {
         res.status(500).json({ error: err.message });

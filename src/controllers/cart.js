@@ -4,7 +4,6 @@ exports.getCart = async (req, res) => {
   try {
     const userId = req.user.userId; 
     const carts = await cartService.getCartByUserId(userId);
-    console.log(carts);
     res.json({ data: carts, status: 'success' });
   } catch (err) {
     res.status(500).json({ error: err.message });
