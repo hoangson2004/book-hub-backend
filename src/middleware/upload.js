@@ -15,9 +15,9 @@ const memoryStorage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/') || file.mimetype === 'application/octet-stream') {
-    cb(null, true); // Nếu là ảnh thì chấp nhận
+    cb(null, true); 
   } else {
-    cb(new Error('Only image files are allowed!'), false); // Nếu không phải ảnh thì từ chối
+    cb(new Error('Only image files are allowed!'), false); 
   }
 };
 

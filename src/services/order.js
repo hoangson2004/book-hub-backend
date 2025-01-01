@@ -2,7 +2,9 @@ const moment = require('moment');
 const Order = require('../models/Order');
 const OverdueService = require('./overdue');
 const Coin = require('../models/Coin');
+const OverdueOrder = require('../models/OverdueOrder');
 const { getBookById } = require('./book');
+
 
 exports.getAllOrders = async () => { 
     try {
@@ -129,6 +131,8 @@ exports.updateOrderStatus = async (orderId, status) => {
             throw new Error('Order not found');
         }
 
+        const userId = order.userId;
+
         switch (status) {
             case 'Processing':
                 if (order.status === 'Pending') {
@@ -158,7 +162,7 @@ exports.updateOrderStatus = async (orderId, status) => {
             case 'Cancelled':
                 if (order.status === 'Pending' || order.status === 'Processing') {
 
-                    const coin = await Coin.findOne({ userId: order.userId });
+                    const coin = await Coin.findOne({ userId });
                     if (!coin) {
                         throw new Error('Coin account not found for the user');
                     }
@@ -170,6 +174,41 @@ exports.updateOrderStatus = async (orderId, status) => {
                     break;
                 }
                 throw new Error('Invalid status transition');
+
+            case 'Returned':
+                if (order.status === 'Completed') {
+                    const coin = await Coin.findOne({ userId });
+                    if (!coin) {
+                        throw new Error('Coin account not found for the user');
+                    }
+
+                    coin.balance += order.depositAmount;
+                    await coin.save();
+                    order.status = 'Returned';
+                    await order.save();
+                    break;
+
+                } else if (order.status === 'Overdue') {
+                    const overdueOrder = await OverdueOrder.findOne({ orderId });
+
+                    if (!overdueOrder) {
+                        throw new Error('Overdue record not found for this order');
+                    }
+
+                    const coin = await Coin.findOne({ userId });
+                    if (!coin) {
+                        throw new Error('Coin account not found for the user');
+                    }
+
+                    const remainingAmount = Math.max(0, order.depositAmount - overdueOrder.totalPenalty);
+                    coin.balance += remainingAmount;
+                    await coin.save();
+                    order.status = 'Returned';
+                    await order.save();
+                    break;
+                }
+
+                throw new Error('Invalid status transition for Returned');
 
             default:
                 throw new Error('Unknown status');

@@ -4,27 +4,30 @@ const Order = require('../models/Order');
 exports.createOverdueOrder = async (order) => {
     try {
         const overdueDays = this.calculateOverdueDays(order.dueDate);
-        if (overdueDays > 0) {
-            const penaltyAmount = order.depositAmount * 0.05 * overdueDays;
 
-            let overdueOrder = await OverdueOrder.findOne({ orderId: order._id });
-
-            if (!overdueOrder) {
-                overdueOrder = new OverdueOrder({
-                    orderId: order._id,
-                    userId: order.userId,
-                    overdueDays,
-                    totalPenalty: penaltyAmount,
-                });
-                await overdueOrder.save();
-            } else {
-                overdueOrder.totalPenalty += penaltyAmount;
-                overdueOrder.overdueDays = overdueDays;
-                await overdueOrder.save();
-            }
-
-            await order.save();
+        if (overdueDays <= 0) {
+            throw new Error('Order is not overdue or overdue days are invalid');
         }
+
+        const penaltyAmount = order.depositAmount * 0.05 * overdueDays;
+
+        let overdueOrder = await OverdueOrder.findOne({ orderId: order._id });
+
+        if (!overdueOrder) {
+            overdueOrder = new OverdueOrder({
+                orderId: order._id,
+                userId: order.userId,
+                overdueDays,
+                totalPenalty: penaltyAmount,
+            });
+            await overdueOrder.save();
+        } else {
+            overdueOrder.totalPenalty += penaltyAmount;
+            overdueOrder.overdueDays = overdueDays;
+            await overdueOrder.save();
+        }
+
+        await order.save();
     } catch (error) {
         throw new Error('Error creating overdue order: ' + error.message);
     }

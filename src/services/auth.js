@@ -1,4 +1,5 @@
 const UserModel = require('../models/User');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.registerUser = async (userData) => {
@@ -11,7 +12,6 @@ exports.registerUser = async (userData) => {
   }
 };
 
-// Đăng nhập người dùng
 exports.loginUser = async (email, password) => {
   const user = await UserModel.findOne({ email });
   if (!user) throw new Error('User not found');
@@ -19,7 +19,37 @@ exports.loginUser = async (email, password) => {
   const isMatch = await user.matchPassword(password);
   if (!isMatch) throw new Error('Invalid credentials');
 
-  return user;
+  const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+  );
+
+  return { 
+      token, 
+      user: { id: user._id, username: user.username, role: user.role } 
+  };
+};
+
+exports.loginAdmin = async (email, password) => {
+  const user = await UserModel.findOne({ email });
+  if (!user) throw new Error('User not found');
+
+  const isMatch = await user.matchPassword(password);
+  if (!isMatch) throw new Error('Invalid credentials');
+
+  if (user.role !== 'Admin') throw new Error('Access denied: Admins only');
+
+  const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+  );
+
+  return { 
+      token, 
+      user: { id: user._id, username: user.username, role: user.role } 
+  };
 };
 
 exports.updateUserProfile = async (userId, updateData) => {
@@ -65,7 +95,6 @@ exports.getAllUsers = async () => {
   }
 };
 
-// Lấy người dùng theo ID
 exports.getUserById = async (userId) => {
   try {
     return await UserModel.findById(userId).select('-password'); 

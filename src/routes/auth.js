@@ -1,13 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 
-const { register, login, getProfile, getAllUsers, getUserById, updateProfile } = require('../controllers/auth');
+const { register, login, loginAdmin, getProfile, getAllUsers, getUserById, updateProfile } = require('../controllers/auth');
 const authMiddleware = require('../middleware/authMiddleware'); 
 
 const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/loginadmin', loginAdmin);
 
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);

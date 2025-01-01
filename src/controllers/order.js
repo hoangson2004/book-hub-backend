@@ -1,10 +1,10 @@
 const orderService = require('../services/order');
 
 exports.createOrder = async (req, res) => {
-    const { items, totalAmount, depositAmount, rentalAmount, paymentMethod, dueDate } = req.body;
+    const { items, paymentMethod, dueDate } = req.body;
     const userId = req.user.userId;
     try {
-        const order = await orderService.createOrder({ userId, items, totalAmount, depositAmount, rentalAmount, paymentMethod, dueDate });
+        const order = await orderService.createOrder({ userId, items, paymentMethod, dueDate });
         res.status(201).json({ message: 'Order created successfully', order });
     } catch (error) {
         res.status(500).json({ message: error.message });

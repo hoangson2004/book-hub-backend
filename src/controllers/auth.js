@@ -1,8 +1,6 @@
-const jwt = require('jsonwebtoken');
 const authService = require('../services/auth');
 const coinService = require('../services/coin');
 const UserModel = require('../models/User');
-const bcrypt = require('bcrypt');
 
 exports.register = async (req, res) => {
     const { username, email, password, phoneNumber, dateOfBirth } = req.body;
@@ -39,18 +37,24 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await authService.loginUser(email, password);
-        const token = jwt.sign(
-            { userId: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        res.json({ token, user: { id: user._id, username: user.username, role: user.role } });
+        const { token, user } = await authService.loginUser(email, password);
+        res.json({ token, user });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.loginAdmin = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const { token, user } = await authService.loginAdmin(email, password);
+        res.json({ token, user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 
 
 exports.getProfile = async (req, res) => {

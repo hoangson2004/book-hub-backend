@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const coinTransactionSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }, 
-  amount: { type: Number, required: true }, // Số coin thay đổi (dương hoặc âm)
+  amount: { type: Number, required: true }, 
   type: { type: String, enum: ['Deposit', 'Withdraw'], required: true }, 
   status: { type: String, enum: ['Pending', 'Success', 'Failed'], default: 'Pending' },
   transactionId: { type: String, required: true }, 

@@ -17,10 +17,10 @@ const orderSchema = new Schema({
   paymentMethod: { type: String, enum: ['Coin', 'Cash'], default: 'Coin' },
   status: {
     type: String,
-    enum: ['Pending', 'Processing', 'Completed', 'Cancelled', 'Overdue'],
+    enum: ['Pending', 'Processing', 'Completed', 'Cancelled', 'Overdue','Returned'],
     default: 'Pending',
   },
-  dueDate: { type: Date, required: true }, // Ngày hết hạn (trả sách)
+  dueDate: { type: Date, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
